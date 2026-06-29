@@ -96,15 +96,6 @@
   programs.nix-ld.enable = true;
 
   # ============================================================
-  # Graphics Support (CRITICAL for GDM/GNOME to launch)
-  # ============================================================
-  hardware.graphics = {
-    enable = true;
-    enable32Bit = true; # Highly recommended for steam/compatibility, optional for pure servers
-  };
-
-
-  # ============================================================
   # NVIDIA driver — PROPRIETARY (recommended for RTX 2080 right now)
   # Switch to "open = true" later when 4080 Super is installed
   # ============================================================
@@ -112,11 +103,10 @@
 
   hardware.nvidia = {
     modesetting.enable = true;
-    open = true;                        # Set to true! RTX 3080 fully supports this.
+    open = false;
     powerManagement.enable = false;    
     powerManagement.finegrained = false;
     nvidiaSettings = true;
-    package = config.boot.kernelPackages.nvidiaPackages.stable; # Ensures you grab the correct stable pair
   };
 
   services.xserver.videoDrivers = [ "nvidia" ];
