@@ -107,10 +107,17 @@
     extraGroups  = [ "networkmanager" "wheel" "docker" ];
   };
 
-  # ====================
-  # CLI tools & Programs
-  # ====================
+  # =============================================
+  # Python 3 + venv (venv included in stdlib)
+  # =============================================
+  # For per-project environments, create one with:
+  #   python -m venv .venv && source .venv/bin/activate
   environment.systemPackages = with pkgs; [
+    python3               # Python interpreter + venv module
+    python312.pkgs.pip    # pip for installing packages into venvs
+    python312.pkgs.virtualenv
+    uv                    # fast Python package installer & resolver
+
     git                   # version control
     htop                  # process viewer
     nvtopPackages.nvidia  # Correct package for NVIDIA GPU monitoring
