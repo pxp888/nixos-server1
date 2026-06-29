@@ -20,6 +20,10 @@
   # System identification
   # ====================
   networking.hostName = "myserver";
+  
+  # CRITICAL FOR ZFS: Generate yours via `head -c 8 /etc/machine-id`
+  networking.hostId = "abcdef12"; 
+  
   system.stateVersion = "26.05";
 
   # ====================
@@ -43,8 +47,8 @@
   # X11 + GNOME
   # ====================
   services.xserver.enable = true;
-  services.displayManager.gdm.enable = true;      # Removed .xserver
-  services.desktopManager.gnome.enable = true;    # Removed .xserver
+  services.displayManager.gdm.enable = true;
+  services.desktopManager.gnome.enable = true;
   services.xserver.xkb = { layout = "us"; variant = ""; };
 
   services.pulseaudio.enable = false;
@@ -66,9 +70,8 @@
   # ====================
   # USER & Shells
   # ====================
-  programs.zsh.enable = true; 
+  programs.zsh.enable = true;
   users.defaultUserShell = pkgs.zsh;
-
   users.users."pxp" = {
     isNormalUser = true;
     description = "paul perrine";
@@ -90,8 +93,9 @@
     fzf                   # fuzzy finder
     bat
     veracrypt             # Enabled: encryption (package)
+    zfs                   # ZFS CLI tools (zpool, zfs, etc.)
   ];
-  
+
   programs.firefox.enable = true;
   programs.nix-ld.enable = true;
 
@@ -100,23 +104,21 @@
   # ============================================================
   hardware.graphics = {
     enable = true;
-    enable32Bit = true; # Highly recommended for steam/compatibility, optional for pure servers
+    enable32Bit = true; # Highly recommended for steam/compatibility
   };
-
 
   # ============================================================
   # NVIDIA driver — PROPRIETARY (recommended for RTX 2080 right now)
   # Switch to "open = true" later when 4080 Super is installed
   # ============================================================
   boot.kernelParams = [ "nvidia-drm.modeset=1" ];
-
   hardware.nvidia = {
     modesetting.enable = true;
     open = true;                        # Set to true! RTX 3080 fully supports this.
-    powerManagement.enable = false;    
+    powerManagement.enable = false;     
     powerManagement.finegrained = false;
     nvidiaSettings = true;
-    package = config.boot.kernelPackages.nvidiaPackages.stable; # Ensures you grab the correct stable pair
+    package = config.boot.kernelPackages.nvidiaPackages.stable;
   };
 
   services.xserver.videoDrivers = [ "nvidia" ];
@@ -127,14 +129,36 @@
   # =============================================
   virtualisation.docker.enable = true;
   virtualisation.podman.enable = true;
-  
-  # Change defaultCniNetwork to defaultNetwork:
-  # virtualisation.podman.defaultNetwork.settings.dns_enabled = true;
 
   # =============================================
   # Tailscale
   # =============================================
   services.tailscale.enable = true;
+
+  # =============================================
+  # ZFS — import existing pool "tank"
+  # =============================================
+  boot.supportedFilesystems = [ "zfs" ];
+  
+  # This tells NixOS to find and auto-import "tank" at boot
+  boot.zfs.extraPools = [ "tank" ];
+
+  services.zfs = {
+    autoScrub.enable = true;      # monthly scrub to catch bit-rot
+    trim.enable = true;
+  };
+
+  # NOTE: If your pool uses native ZFS mounting (default), leave this 
+  # block commented out. If you want NixOS to mount it, uncomment this
+  # and run `sudo zfs set mountpoint=legacy tank` first.
+  #
+  # fileSystems = {
+  #   "/tank" = {
+  #     device     = "tank";
+  #     fsType     = "zfs";
+  #     neededForBoot = true;
+  #   };
+  # };
 
   # =============================================
   # SSH server (key-only, cert-based)
@@ -147,8 +171,6 @@
     KbdInteractiveAuthentication = false;
   };
 
-  # After deploying your CA cert (copy to /etc/ssh/ca.pub):
-  # Uncomment the lines below and rebuild:
   services.openssh.extraConfig = ''
     TrustedUserCAKeys /etc/ssh/ca.pub
   '';
@@ -157,10 +179,8 @@
   # Security configuration for VeraCrypt
   # =============================================
   security.sudo.extraConfig = ''
-    # Allows users in the wheel group (like pxp) to run the veracrypt binary 
-    # without a sudo password prompt during volume mounts.
-    %wheel ALL=(ALL) NOPASSWD: /run/current-system/sw/bin/veracrypt
+    # Allows users in the wheel group (like pxp) to run the veracrypt binary
+    # without a sudo password prompt during volume mounts. 
+    %wheel ALL=(ALL) NOPASSWD: /run/current-system/sw/bin/veracrypt 
   '';
 }
-
-
