@@ -14,7 +14,7 @@
   # Bootloader
   # ====================
   boot.loader.systemd-boot.enable = true;
-  boot.loader.efi.canTouchEFIVariables = true;
+  boot.loader.efi.canTouchEfiVariables = true;
 
   # ====================
   # System identification
@@ -67,22 +67,29 @@
   # ====================
   powerManagement.enable = false;
 
-  # Disable idle-based suspend (this is what broadcasts the GDM message)
-  services.logind.extraConfig = "IdleAction=none";
-
-
-  # GNOME desktop does not enter idle mode and never sleeps on power profile
-  dconf.settings = {
-    "org/gnome/desktop/session" = let
-      zeroUint32 = lib.gvariant.makeVariant (lib.gvariant.mkuint32 0);
-    in {
-      idle-delay = zeroUint32;
-    };
-    "org/gnome/settings-daemon/plugins/power" = {
-      sleep-inactive-ac-type   = "nothing";
-      sleep-inactive-battery-type = "nothing";
-    };
+  # Disable idle-based suspend via modern systemd-logind settings
+  services.logind.settings.Login = {
+    IdleAction = "none";
   };
+
+  # HARD LOCKDOWN: Prevent systemd from ever invoking sleep/suspend states
+  systemd.targets.sleep.enable = false;
+  systemd.targets.suspend.enable = false;
+  systemd.targets.hibernate.enable = false;
+  systemd.targets.hybrid-sleep.enable = false;
+
+  # Clean built-in shortcut to stop GDM login screen from suspending the server
+  services.displayManager.gdm.autoSuspend = false;
+
+  # Native NixOS system-level overrides for GNOME desktop environment
+  services.xserver.desktopManager.gnome.extraGSettingsOverrides = ''
+    [org.gnome.desktop.session]
+    idle-delay=uint32 0
+
+    [org.gnome.settings-daemon/plugins/power]
+    sleep-inactive-ac-type='nothing'
+    sleep-inactive-battery-type='nothing'
+  '';
 
   # ====================
   # Unfree
@@ -206,3 +213,4 @@
     %wheel ALL=(ALL) NOPASSWD: /run/current-system/sw/bin/veracrypt
   '';
 }
+
