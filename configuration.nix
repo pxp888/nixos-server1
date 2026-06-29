@@ -5,7 +5,7 @@
 # 3. After boot, run: nvidia-smi && docker run ... && sudo tailscale up
 # ============================================================
 
-{ config, pkgs, ... }:
+{ config, pkgs, lib, ... }:
 
 {
   imports = [ ./hardware-configuration.nix ];
@@ -14,16 +14,16 @@
   # Bootloader
   # ====================
   boot.loader.systemd-boot.enable = true;
-  boot.loader.efi.canTouchEfiVariables = true;
+  boot.loader.efi.canTouchEFIVariables = true;
 
   # ====================
   # System identification
   # ====================
   networking.hostName = "myserver";
-  
+
   # CRITICAL FOR ZFS: Generate yours via `head -c 8 /etc/machine-id`
-  networking.hostId = "abcdef12"; 
-  
+  networking.hostId = "abcdef12";
+
   system.stateVersion = "26.05";
 
   # ====================
@@ -54,13 +54,35 @@
   services.pulseaudio.enable = false;
   security.rtkit.enable = true;
   services.pipewire = {
-    enable       = true;
-    alsa.enable = true;
+    enable        = true;
+    alsa.enable   = true;
     alsa.support32Bit = true;
-    pulse.enable = true;
+    pulse.enable  = true;
   };
 
   services.printing.enable = true;
+
+  # ====================
+  # Powers & Never suspend
+  # ====================
+  powerManagement.enable = false;
+
+  # Disable idle-based suspend (this is what broadcasts the GDM message)
+  services.logind.extraConfig = "IdleAction=none";
+
+
+  # GNOME desktop does not enter idle mode and never sleeps on power profile
+  dconf.settings = {
+    "org/gnome/desktop/session" = let
+      zeroUint32 = lib.gvariant.makeVariant (lib.gvariant.mkuint32 0);
+    in {
+      idle-delay = zeroUint32;
+    };
+    "org/gnome/settings-daemon/plugins/power" = {
+      sleep-inactive-ac-type   = "nothing";
+      sleep-inactive-battery-type = "nothing";
+    };
+  };
 
   # ====================
   # Unfree
@@ -74,8 +96,8 @@
   users.defaultUserShell = pkgs.zsh;
   users.users."pxp" = {
     isNormalUser = true;
-    description = "paul perrine";
-    extraGroups = [ "networkmanager" "wheel" "docker" ];
+    description  = "paul perrine";
+    extraGroups  = [ "networkmanager" "wheel" "docker" ];
   };
 
   # ====================
@@ -85,7 +107,7 @@
     git                   # version control
     htop                  # process viewer
     nvtopPackages.nvidia  # Correct package for NVIDIA GPU monitoring
-    pv                    # pipe visualization  
+    pv                    # pipe visualization
     mbuffer               # network throughput tool
     tmux                  # terminal multiplexer
     ncdu                  # disk usage analyzer
@@ -103,7 +125,7 @@
   # Graphics Support (CRITICAL for GDM/GNOME to launch)
   # ============================================================
   hardware.graphics = {
-    enable = true;
+    enable      = true;
     enable32Bit = true; # Highly recommended for steam/compatibility
   };
 
@@ -111,14 +133,14 @@
   # NVIDIA driver — PROPRIETARY (recommended for RTX 2080 right now)
   # Switch to "open = true" later when 4080 Super is installed
   # ============================================================
-  boot.kernelParams = [ "nvidia-drm.modeset=1" ];
-  hardware.nvidia = {
-    modesetting.enable = true;
-    open = true;                        # Set to true! RTX 3080 fully supports this.
-    powerManagement.enable = false;     
+  boot.kernelParams                 = [ "nvidia-drm.modeset=1" ];
+  hardware.nvidia                   = {
+    modesetting.enable      = true;
+    open                    = true;   # Set to true! RTX 3080 fully supports this.
+    powerManagement.enable  = false;
     powerManagement.finegrained = false;
-    nvidiaSettings = true;
-    package = config.boot.kernelPackages.nvidiaPackages.stable;
+    nvidiaSettings          = true;
+    package                 = config.boot.kernelPackages.nvidiaPackages.stable;
   };
 
   services.xserver.videoDrivers = [ "nvidia" ];
@@ -127,8 +149,8 @@
   # =============================================
   # Docker & Podman
   # =============================================
-  virtualisation.docker.enable = true;
-  virtualisation.podman.enable = true;
+  virtualisation.docker.enable   = true;
+  virtualisation.podman.enable   = true;
 
   # =============================================
   # Tailscale
@@ -139,16 +161,16 @@
   # ZFS — import existing pool "tank"
   # =============================================
   boot.supportedFilesystems = [ "zfs" ];
-  
+
   # This tells NixOS to find and auto-import "tank" at boot
-  boot.zfs.extraPools = [ "tank" ];
+  boot.zfs.extraPools       = [ "tank" ];
 
   services.zfs = {
-    autoScrub.enable = true;      # monthly scrub to catch bit-rot
-    trim.enable = true;
+    autoScrub.enable = true;   # monthly scrub to catch bit-rot
+    trim.enable      = true;
   };
 
-  # NOTE: If your pool uses native ZFS mounting (default), leave this 
+  # NOTE: If your pool uses native ZFS mounting (default), leave this
   # block commented out. If you want NixOS to mount it, uncomment this
   # and run `sudo zfs set mountpoint=legacy tank` first.
   #
@@ -166,8 +188,8 @@
   services.openssh.enable = true;
   networking.firewall.allowedTCPPorts = [ 22 ];
   services.openssh.settings = {
-    PermitRootLogin = "no";
-    PasswordAuthentication = false;
+    PermitRootLogin         = "no";
+    PasswordAuthentication  = false;
     KbdInteractiveAuthentication = false;
   };
 
@@ -180,7 +202,7 @@
   # =============================================
   security.sudo.extraConfig = ''
     # Allows users in the wheel group (like pxp) to run the veracrypt binary
-    # without a sudo password prompt during volume mounts. 
-    %wheel ALL=(ALL) NOPASSWD: /run/current-system/sw/bin/veracrypt 
+    # without a sudo password prompt during volume mounts.
+    %wheel ALL=(ALL) NOPASSWD: /run/current-system/sw/bin/veracrypt
   '';
 }
