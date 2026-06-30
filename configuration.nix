@@ -193,10 +193,16 @@
   # };
 
   # =============================================
-  # SSH server (key-only, cert-based)
+  # Firewall — fully disabled
+    # =============================================
+  # Firewall — fully disabled
   # =============================================
+  networking.firewall.enable = false;
+
+  # ==============================================
+  # SSH server (key-only, cert-based)
+  # ==============================================
   services.openssh.enable = true;
-  networking.firewall.allowedTCPPorts = [ 22 ];
   services.openssh.settings = {
     PermitRootLogin         = "no";
     PasswordAuthentication  = false;
