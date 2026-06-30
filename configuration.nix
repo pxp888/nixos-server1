@@ -143,14 +143,10 @@
     enable32Bit = true; # Highly recommended for steam/compatibility
   };
 
-  # ============================================================
-  # NVIDIA driver — PROPRIETARY (recommended for RTX 2080 right now)
-  # Switch to "open = true" later when 4080 Super is installed
-  # ============================================================
   boot.kernelParams                 = [ "nvidia-drm.modeset=1" ];
   hardware.nvidia                   = {
     modesetting.enable      = true;
-    open                    = true;   # Set to true! RTX 3080 fully supports this.
+    open                    = true;
     powerManagement.enable  = false;
     powerManagement.finegrained = false;
     nvidiaSettings          = true;
