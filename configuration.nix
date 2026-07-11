@@ -128,7 +128,8 @@
     yt-dlp                # video/audio downloader
     fzf                   # fuzzy finder
     bat
-    veracrypt             # Enabled: encryption (package)
+    veracrypt             # Encryption (package)
+    p7zip                 # 7-Zip compression tool (7z)
     zfs                   # ZFS CLI tools (zpool, zfs, etc.)
   ];
 
