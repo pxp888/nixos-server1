@@ -127,6 +127,7 @@
     ncdu                  # disk usage analyzer
     yt-dlp                # video/audio downloader
     fzf                   # fuzzy finder
+    jq
     bat
     veracrypt             # Encryption (package)
     p7zip                 # 7-Zip compression tool (7z)
