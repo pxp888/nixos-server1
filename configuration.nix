@@ -121,6 +121,7 @@
 
     git                   # version control
     htop                  # process viewer
+    btop
     nvtopPackages.nvidia  # Correct package for NVIDIA GPU monitoring
     pv                    # pipe visualization
     mbuffer               # network throughput tool
