@@ -137,6 +137,7 @@
   ];
 
   programs.firefox.enable = true;
+  programs.neovim.enable  = true;   # nvim + default config in /etc/nvim
   programs.nix-ld.enable = true;
 
   # ============================================================
