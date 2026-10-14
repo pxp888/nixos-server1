@@ -134,6 +134,7 @@
     veracrypt             # Encryption (package)
     p7zip                 # 7-Zip compression tool (7z)
     zfs                   # ZFS CLI tools (zpool, zfs, etc.)
+    sqlite                # SQLite command line client
   ];
 
   programs.firefox.enable = true;
